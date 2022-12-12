@@ -91,25 +91,25 @@ public class AccountTest {
 
     @AfterEach
     void tearDown(){
-        //accountRepository.deleteAll();
-        //accountHolderRepository.deleteAll();
+        accountRepository.deleteAll();
+        accountHolderRepository.deleteAll();
 
     }
 
-    /*@Test
+    @Test
     void createAccountHolder() {
         AccountHolder accountTest = accountHolderRepository.findById(accountHolder1.getId()).get();
         assertEquals("Miguel", accountTest.getName());
-    }*/
+    }
 
 
-   /* @Test
+    @Test
     void shouldAddNewTransference() {
         originAccount = accountRepository.findById(1L).get();
         destinyAccount = accountRepository.findById(2L).get();
         transactionRepository.save(new Transaction(new BigDecimal(100), "Maria", originAccount, destinyAccount));
         assertEquals(1, transactionRepository.findAll().size());
-    }*/
+    }
 
     @Test
     void transfer_works() throws Exception {
@@ -127,5 +127,4 @@ public class AccountTest {
         assertTrue(mvcResult.getResponse().getContentAsString().contains("Maria"));
         assertEquals(new BigDecimal("2010.00"), destinyAccount.getBalance());
     }
-
 }

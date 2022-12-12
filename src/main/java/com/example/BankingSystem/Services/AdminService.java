@@ -1,9 +1,6 @@
 package com.example.BankingSystem.Services;
 
-import com.example.BankingSystem.DTOs.CheckingDTO;
-import com.example.BankingSystem.DTOs.CreditCardDTO;
-import com.example.BankingSystem.DTOs.SavingsDTO;
-import com.example.BankingSystem.DTOs.ThirdPartyDTO;
+import com.example.BankingSystem.DTOs.*;
 import com.example.BankingSystem.Repository.*;
 import com.example.BankingSystem.models.Accounts.*;
 import com.example.BankingSystem.models.Users.AccountHolder;
@@ -106,6 +103,19 @@ public class AdminService {
     public BigDecimal checkBalance(Long accountId) {
 
         return accountRepository.findById(accountId).get().getBalance();
+    }
+
+    public Account updateAccountBalance(AccountDTO accountDTO) {
+        Account account = accountRepository.findById(accountDTO.getAccountId()).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
+        if(account instanceof Savings){
+            savingsRepository.findById(accountDTO.getAccountId()).get().checkInterestSavingsBalance();
+        }
+        else if( account instanceof CreditCard ){
+            creditCardRepository.findById(accountDTO.getAccountId()).get().checkInterestCreditCardBalance();
+        }
+        BigDecimal newBalance = accountDTO.getNewBalance();
+        account.setBalance(newBalance);
+        return accountRepository.save(account);
     }
 
     public void deleteAccount(Long accountId){

@@ -37,10 +37,10 @@ public class CreditCard extends Account{
         this.interestRate = new BigDecimal(0.2);
     }
 
-    public void setInterestCreditCardBalance (BigDecimal balance){
+    public void checkInterestCreditCardBalance (){
         int elapsedMonth = Period.between(lastInterest, LocalDate.now()).getMonths();
         if(elapsedMonth>=1){
-            super.setBalance(balance.multiply(interestRate).multiply(new BigDecimal(elapsedMonth)));
+            super.setBalance(super.getBalance().multiply(interestRate).multiply(new BigDecimal(elapsedMonth)));
             setLastInterest(LocalDate.now());
         }
     }

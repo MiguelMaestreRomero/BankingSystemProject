@@ -53,10 +53,10 @@ public class Savings extends Account{
         this.interestRate = new BigDecimal(0.0025);
     }
 
-    public void setInterestSavingsBalance (BigDecimal balance){
+    public void checkInterestSavingsBalance (){
         int elapsedYears = Period.between(lastInterest, LocalDate.now()).getYears();
         if(elapsedYears>=1){
-            super.setBalance(balance.multiply(interestRate).multiply(new BigDecimal(elapsedYears)));
+            super.setBalance(super.getBalance().multiply(interestRate).multiply(new BigDecimal(elapsedYears)));
             setLastInterest(LocalDate.now());
         }
     }

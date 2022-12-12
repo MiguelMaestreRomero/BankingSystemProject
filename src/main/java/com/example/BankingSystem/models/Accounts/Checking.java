@@ -8,7 +8,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.DecimalMin;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.Period;
 
 @Entity
 public class Checking extends Account{
@@ -23,6 +25,8 @@ public class Checking extends Account{
 
     @Enumerated(EnumType.STRING)
     private Status status;
+
+    private LocalDate lastInterest = LocalDate.now();
 
     public Checking() {
     }
@@ -43,6 +47,14 @@ public class Checking extends Account{
         this.monthlyMaintenanceFee = new BigDecimal(12);
         this.creationDate = LocalDate.now();
         this.status = Status.ACTIVE;
+    }
+
+    public void setInterestCheckingBalance (BigDecimal balance){
+        int elapsedMonth = Period.between(lastInterest, LocalDate.now()).getMonths();
+        if(elapsedMonth>=1){
+            super.setBalance(balance.subtract(monthlyMaintenanceFee).multiply(new BigDecimal(elapsedMonth)));
+            setLastInterest(LocalDate.now());
+        }
     }
 
     public int getSecretKey() {
@@ -83,5 +95,13 @@ public class Checking extends Account{
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public LocalDate getLastInterest() {
+        return lastInterest;
+    }
+
+    public void setLastInterest(LocalDate lastInterest) {
+        this.lastInterest = lastInterest;
     }
 }

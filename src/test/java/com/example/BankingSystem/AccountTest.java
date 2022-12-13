@@ -1,11 +1,11 @@
 package com.example.BankingSystem;
 
 import com.example.BankingSystem.DTOs.TransactionDTO;
-import com.example.BankingSystem.Repository.AccountHolderRepository;
-import com.example.BankingSystem.Repository.AccountRepository;
-import com.example.BankingSystem.Repository.TransactionRepository;
+import com.example.BankingSystem.Repository.*;
 import com.example.BankingSystem.models.Accounts.Account;
 import com.example.BankingSystem.models.Accounts.Checking;
+import com.example.BankingSystem.models.Accounts.CreditCard;
+import com.example.BankingSystem.models.Accounts.Savings;
 import com.example.BankingSystem.models.Embedded.Address;
 import com.example.BankingSystem.models.Transaction;
 import com.example.BankingSystem.models.Users.AccountHolder;
@@ -46,7 +46,17 @@ public class AccountTest {
     AccountRepository accountRepository;
 
     @Autowired
-    private TransactionRepository transactionRepository;
+    TransactionRepository transactionRepository;
+
+    @Autowired
+    CheckingRepository checkingRepository;
+
+    @Autowired
+    CreditCardRepository creditCardRepository;
+
+    @Autowired
+    SavingsRepository savingsRepository;
+
 
     Address address;
     AccountHolder accountHolder1;
@@ -56,12 +66,14 @@ public class AccountTest {
 
     Checking checkingAccount1;
     Checking checkingAccount2;
-
+    Checking checkingAccount3;
     TransactionDTO transactionDTO;
 
     Account originAccount;
     Account destinyAccount;
 
+    CreditCard creditCard;
+    Savings savings;
 
     private MockMvc mockMvc;
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
@@ -83,9 +95,10 @@ public class AccountTest {
         accountHolder4 = new AccountHolder("Irene", "678", LocalDate.of(2000, 2, 6), address1, "irene@gmail.com");
         accountHolderRepository.saveAll(List.of(accountHolder1, accountHolder2, accountHolder3, accountHolder4));
 
-        checkingAccount1 = new Checking(new BigDecimal(1000), accountHolder1, 123);
+        checkingAccount1 = new Checking(new BigDecimal(240), accountHolder1, 123);
         checkingAccount2 = new Checking(new BigDecimal(2000), accountHolder2, 234);
-        accountRepository.saveAll(List.of(checkingAccount1,checkingAccount2));
+        checkingAccount3 = new Checking(new BigDecimal(3000), accountHolder3, 345);
+        accountRepository.saveAll(List.of(checkingAccount1,checkingAccount2, checkingAccount3));
 
     }
 
@@ -98,13 +111,33 @@ public class AccountTest {
 
     @Test
     void createAccountHolder() {
-        AccountHolder accountTest = accountHolderRepository.findById(accountHolder1.getId()).get();
-        assertEquals("Miguel", accountTest.getName());
+        AccountHolder accountHolderTest = accountHolderRepository.findById(accountHolder1.getId()).get();
+        assertEquals("Miguel", accountHolderTest.getName());
+    }
+
+    @Test
+    void createCheckingAccount() {
+        //There are three accounts created in setUp
+        assertEquals(3, checkingRepository.findAll().size());
+    }
+
+    @Test
+    void createCreditCardAccount() {
+        creditCard = new CreditCard(new BigDecimal(1000), accountHolder3);
+        creditCardRepository.save(creditCard);
+        assertEquals(1, creditCardRepository.findAll().size());
+    }
+
+    @Test
+    void createSavingAccount() {
+        savings = new Savings(new BigDecimal(2000), accountHolder2, 123);
+        savingsRepository.save(savings);
+        assertEquals(1, savingsRepository.findAll().size());
     }
 
 
     @Test
-    void shouldAddNewTransference() {
+    void checkNewTransaction() {
         originAccount = accountRepository.findById(1L).get();
         destinyAccount = accountRepository.findById(2L).get();
         transactionRepository.save(new Transaction(new BigDecimal(100), "Maria", originAccount, destinyAccount));
@@ -112,19 +145,28 @@ public class AccountTest {
     }
 
     @Test
-    void transfer_works() throws Exception {
+    void checkTransaction() throws Exception {
+        originAccount = accountRepository.findById(3L).get();
+        destinyAccount = accountRepository.findById(2L).get();
+        transactionDTO = new TransactionDTO(new BigDecimal(10),"Maria", 3L, 2L);
+        String body = objectMapper.writeValueAsString(transactionDTO);
+        MvcResult mvcResult = mockMvc.perform(post("/check_transaction").content(body).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isCreated()).andReturn();
+        originAccount = accountRepository.findById(3L).get();
+        destinyAccount = accountRepository.findById(2L).get();
+        assertEquals(new BigDecimal("2010.00"), destinyAccount.getBalance());
+        assertEquals(new BigDecimal("2990.00"), originAccount.getBalance());
+    }
+
+    @Test
+    void checkPenaltyFee() throws Exception {
         originAccount = accountRepository.findById(1L).get();
         destinyAccount = accountRepository.findById(2L).get();
-        //System.err.println(originAccount.getBalance());
-        //System.err.println(destinyAccount.getBalance());
         transactionDTO = new TransactionDTO(new BigDecimal(10),"Maria", 1L, 2L);
         String body = objectMapper.writeValueAsString(transactionDTO);
         MvcResult mvcResult = mockMvc.perform(post("/check_transaction").content(body).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isCreated()).andReturn();
         originAccount = accountRepository.findById(1L).get();
         destinyAccount = accountRepository.findById(2L).get();
-        System.err.println(originAccount.getBalance());
-        System.err.println(destinyAccount.getBalance());
-        assertTrue(mvcResult.getResponse().getContentAsString().contains("Maria"));
-        assertEquals(new BigDecimal("2010.00"), destinyAccount.getBalance());
+        //To test the penaltyFee: balance of Origin Account is lower than minimumBalance
+        assertEquals(new BigDecimal("190.00"), originAccount.getBalance());
     }
 }

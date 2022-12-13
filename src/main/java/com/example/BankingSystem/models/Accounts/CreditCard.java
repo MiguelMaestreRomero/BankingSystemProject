@@ -6,6 +6,7 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.Period;
 
@@ -15,8 +16,8 @@ public class CreditCard extends Account{
     @DecimalMax(value = "100000")
     @DecimalMin(value = "100")
     private BigDecimal creditLimit;
-    @DecimalMax(value = "0.2")
-    @DecimalMin(value = "0.1")
+    @DecimalMax(value = "0.20")
+    @DecimalMin(value = "0.10")
     private BigDecimal interestRate;
 
     private LocalDate lastInterest = LocalDate.now();
@@ -28,13 +29,13 @@ public class CreditCard extends Account{
     public CreditCard(BigDecimal balance, AccountHolder primaryOwner, AccountHolder secondaryOwner) {
         super(balance, primaryOwner, secondaryOwner);
         this.creditLimit = new BigDecimal(100000);
-        this.interestRate = new BigDecimal(0.2);
+        this.interestRate = new BigDecimal(0.20).setScale(2, RoundingMode.HALF_DOWN);
     }
 
     public CreditCard(BigDecimal balance, AccountHolder primaryOwner) {
         super(balance, primaryOwner);
         this.creditLimit = new BigDecimal(100000);
-        this.interestRate = new BigDecimal(0.2);
+        this.interestRate = new BigDecimal(0.20).setScale(2,RoundingMode.HALF_DOWN);
     }
 
     public void checkInterestCreditCardBalance (){

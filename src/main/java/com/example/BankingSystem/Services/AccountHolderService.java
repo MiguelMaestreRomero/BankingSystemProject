@@ -57,7 +57,9 @@ public class AccountHolderService {
         if (accountRepository.findById(accountId).isPresent()) {
             originAccount = accountRepository.findById(accountId).get();
             if (originAccount instanceof Checking) {
+                System.err.println("he entrado en checking");
                 if (originAccount.getBalance().compareTo(((Checking) originAccount).getMinimumBalance()) < 0) {
+                    System.err.println("he entrado en penaltyFee");
                     originAccount.setBalance(originAccount.getBalance().subtract(originAccount.getPenaltyFee()));
                     System.err.println(originAccount.getBalance());
                     accountRepository.save(originAccount);

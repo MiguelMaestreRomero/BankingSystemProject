@@ -18,13 +18,8 @@ public class BankingSystemApplication implements CommandLineRunner {
         SpringApplication.run(BankingSystemApplication.class, args);
     }
 
-    @Autowired
-    AccountHolderRepository accountHolderRepository;
-
     @Override
     public void run(String... args) throws Exception {
-
-
 
     }
 }

@@ -1,6 +1,7 @@
 package com.example.BankingSystem.Controllers;
 
 import com.example.BankingSystem.DTOs.*;
+import com.example.BankingSystem.Repository.AccountRepository;
 import com.example.BankingSystem.Services.AccountHolderService;
 import com.example.BankingSystem.Services.AdminService;
 import com.example.BankingSystem.Services.ThirdPartyService;
@@ -26,6 +27,9 @@ public class AccountController {
     @Autowired
     ThirdPartyService thirdPartyService;
 
+    @Autowired
+    AccountRepository accountRepository;
+
 
     @PostMapping("/create_account_holder")
     @ResponseStatus(HttpStatus.CREATED)
@@ -33,11 +37,16 @@ public class AccountController {
         return accountHolderService.createAccountHolder(accountHolderDTO);
     }
 
-
     @GetMapping("/get_balance")
     @ResponseStatus(HttpStatus.OK)
     public BigDecimal checkBalance(@RequestParam Long accountId){
         return accountHolderService.checkBalance(accountId);
+    }
+
+    @PatchMapping("/update_balance")
+    @ResponseStatus(HttpStatus.OK)
+    public Account updateAccountBalance(@RequestBody AccountDTO accountDTO){
+        return adminService.updateAccountBalance(accountDTO);
     }
 
     @PostMapping("/check_transaction")
@@ -79,7 +88,6 @@ public class AccountController {
     @DeleteMapping("/delete_account/{id}")
     @ResponseStatus(HttpStatus.OK)
     public void deleteAccount(@PathVariable Long accountId){
-
         adminService.deleteAccount(accountId);
     }
 
